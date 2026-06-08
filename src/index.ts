@@ -6,8 +6,15 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { loadConfig } from './config.js';
 import { buildTools } from './tools.js';
+import { applyEnvFile } from './env-file.js';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 async function main() {
+  // Load repo-root .env (set via `npm run setup`) before reading config.
+  // dist/index.js → repo root is one dir up from dist/.
+  const here = dirname(fileURLToPath(import.meta.url));
+  applyEnvFile(join(here, '..', '.env'));
   const cfg = loadConfig();
   const tools = buildTools(cfg);
   const byName = new Map(tools.map((t) => [t.name, t]));
