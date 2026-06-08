@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // MCP server entry. Loads config, registers the six tools, serves over stdio.
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';

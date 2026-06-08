@@ -53,6 +53,16 @@ export class WorkerClient {
     return body.data.request as CustomTemplateRequest;
   }
 
+  async getTemplate(slug: string): Promise<any | null> {
+    const res = await this.fetchFn(this.url(`/api/admin/astro-templates/${slug}`), {
+      method: 'GET',
+      headers: this.headers(),
+    });
+    if (res.status === 404) return null;
+    const body = await this.parseOrThrow(res, 'getTemplate');
+    return body.data?.template ?? body.data ?? null;
+  }
+
   async templateExists(slug: string): Promise<boolean> {
     const res = await this.fetchFn(this.url(`/api/admin/astro-templates/${slug}`), {
       method: 'GET',

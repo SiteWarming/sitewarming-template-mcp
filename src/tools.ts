@@ -120,13 +120,25 @@ export function buildTools(cfg: Config): ToolDef[] {
         if (req.status !== 'approved') {
           throw new Error(`Request ${request_id} is "${req.status}". mark-delivered requires status "approved".`);
         }
-        const created = await client.createTemplate({
-          id: slug,
-          name,
-          description,
-          thumbnail_url,
-          owner_org_id: req.organization_id,
-        });
+        // Idempotent recovery: if a prior run created the row but failed to
+        // deliver, reuse the existing template as long as it is org_private
+        // and owned by this request's org. Otherwise create it fresh.
+        let created: any;
+        const existing = await client.getTemplate(slug);
+        if (existing) {
+          if (existing.visibility !== 'org_private' || existing.owner_org_id !== req.organization_id) {
+            throw new Error(`Template "${slug}" already exists but is not org_private/owned by org ${req.organization_id}. Pick a different slug.`);
+          }
+          created = existing;
+        } else {
+          created = await client.createTemplate({
+            id: slug,
+            name,
+            description,
+            thumbnail_url,
+            owner_org_id: req.organization_id,
+          });
+        }
         const delivered = await client.markDelivered(request_id, slug);
         return JSON.stringify({ created, delivered, message: `Template "${slug}" registered + delivered to org ${req.organization_id}. Commit + deploy the astro repo to publish.` }, null, 2);
       },
