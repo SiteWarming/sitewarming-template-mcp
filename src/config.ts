@@ -1,7 +1,7 @@
 // Reads + validates required env. Throws a clear error on startup if missing.
 import { z } from 'zod';
 
-const ConfigSchema = z.object({
+export const ConfigSchema = z.object({
   WORKER_API_URL: z.string().url(),
   TEMPLATE_MCP_API_KEY: z.string().min(1),
   ASTRO_REPO_PATH: z.string().min(1),
